@@ -17,6 +17,19 @@ env/
 .coverage
 htmlcov/
 
+# UV cache
+.uv/
+
+# Build artifacts
+dist/
+build/
+
+# Backend specific
+backend/db/
+backend/*.db
+backend/*.sqlite
+backend/*.sqlite3
+
 # Environment variables
 .env
 .env.*
