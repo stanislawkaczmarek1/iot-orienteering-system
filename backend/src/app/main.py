@@ -50,6 +50,15 @@ app.add_middleware(
 	allow_headers=["*"],
 )
 
+@app.get("/")
+async def root():
+  return {
+    "message": "IoT Orienteering System API",
+    "version": config.VERSION,
+    "docs": "/docs",
+    "health": f"{config.API_PREFIX}/health"
+  }
+
 app.include_router(api_router, prefix=config.API_PREFIX)
 
 logger.info(f"FastAPI application configured.")

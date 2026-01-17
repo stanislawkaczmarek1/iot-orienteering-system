@@ -24,7 +24,7 @@ class Base(DeclarativeBase):
 
 
 class DatabaseManager:
-	"""Manages PostgreSQL database connections and sessions."""
+	"""Manages database connections and sessions."""
 	
 	def __init__(self):
 		self._engine: Optional[AsyncEngine] = None
