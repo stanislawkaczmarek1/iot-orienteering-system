@@ -1,14 +1,14 @@
 from PyQt6.QtWidgets import QFrame, QVBoxLayout, QLabel, QFrame, QPushButton, QLineEdit, QCheckBox, QMessageBox, QDateEdit, QTimeEdit, QHBoxLayout
 from PyQt6.QtCore import QDateTime, QTime, QDate
 
-from backend.db.race_repository import RaceRepository
-from backend.db.models import Race
 from desktop_ui.config import RACE_CREATOR_INPUT_FIELD_WIDTH
+from desktop_ui.services.race_service import RaceService
+
 
 class RaceCreatorFrame(QFrame):
-    def __init__(self, race_repository: RaceRepository, parent=None):
+    def __init__(self, race_service: RaceService, parent=None):
         super().__init__(parent)
-        self.race_repository = race_repository
+        self.race_service = race_service
 
         self.init_ui()
 
@@ -23,6 +23,16 @@ class RaceCreatorFrame(QFrame):
         name_row.addWidget(self.name_input)
         name_row.addStretch()
         main_layout.addLayout(name_row)
+
+        main_layout.addWidget(QLabel("Race location"))
+        location_row = QHBoxLayout()
+        self.location_input = QLineEdit()
+        self.location_input.setFixedWidth(RACE_CREATOR_INPUT_FIELD_WIDTH)
+        self.location_input.setPlaceholderText("Race location")
+        location_row.addWidget(self.location_input)
+        location_row.addStretch()
+        main_layout.addLayout(location_row)
+
 
         main_layout.addWidget(QLabel("Race date"))
         date_row = QHBoxLayout()
@@ -61,17 +71,25 @@ class RaceCreatorFrame(QFrame):
             QMessageBox.warning(self, "Validation error", "Race name is required")
             return
 
+        location = self.location_input.text().strip()
+        if not location:
+            QMessageBox.warning(self, "Validation error", "Race location is required")
+            return
+
         date = self.date_input.date()
         time = self.time_input.time()
         datetime_value = QDateTime(date, time).toPyDateTime()
 
-        race = Race(
-            name=name,
-            date=datetime_value,
-            is_active=self.active_checkbox.isChecked(),
-        )
-
-        self.race_repository.add_race(race)
+        self.race_service.create_race({
+            "name": name,
+            "location": location,
+            "date": datetime_value.isoformat(),
+            "is_active": self.active_checkbox.isChecked(),
+        })
 
         self.name_input.clear()
+        self.location_input.clear()
+        self.date_input.setDate(QDate.currentDate())
+        self.time_input.setTime(QTime.currentTime())
+
         self.active_checkbox.setChecked(True)

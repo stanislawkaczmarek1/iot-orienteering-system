@@ -6,6 +6,7 @@ class RaceBase(BaseModel):
   name: str
   date: datetime
   is_active: bool
+  location: str
 
 
 class RaceCreate(RaceBase):
@@ -16,6 +17,7 @@ class RaceUpdate(BaseModel):
   name: str | None = None
   date: datetime | None = None
   is_active: bool | None = None
+  location: str | None = None
 
 
 class RaceResponse(RaceBase):

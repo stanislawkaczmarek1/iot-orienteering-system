@@ -15,6 +15,7 @@ class Race(Base):
   id: Mapped[int] = mapped_column(primary_key=True)
   name: Mapped[str] = mapped_column(String(30))
   date: Mapped[datetime] = mapped_column(DateTime)
+  location: Mapped[str] = mapped_column(String(30))
   is_active: Mapped[bool] = mapped_column(Boolean)
 
   race_runners: Mapped[List["RaceRunner"]] = relationship(
