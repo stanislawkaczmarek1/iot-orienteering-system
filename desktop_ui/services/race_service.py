@@ -2,12 +2,12 @@ import json
 from dataclasses import dataclass
 from datetime import datetime
 
-from PyQt6.QtCore import QObject, pyqtSignal, QUrl
+from PyQt6.QtCore import QObject, pyqtSignal, QUrl, QTimer
 from PyQt6.QtNetwork import QNetworkAccessManager, QNetworkRequest
 
 
 @dataclass
-class Race:
+class RaceModel:
     id: int
     name: str
     date: datetime
@@ -15,8 +15,8 @@ class Race:
     is_active: bool
 
     @staticmethod
-    def from_dict(data: dict) -> "Race":
-        return Race(
+    def from_dict(data: dict) -> "RaceModel":
+        return RaceModel(
             id=data.get("id"),
             name=data.get("name"),
             date=datetime.fromisoformat(data.get("date")),
@@ -27,12 +27,15 @@ class Race:
 
 class RaceService(QObject):
     racesLoaded = pyqtSignal(list)
-    raceCreated = pyqtSignal(dict)
-    errorOccurred = pyqtSignal(str)
+    raceCreated = pyqtSignal(RaceModel)
 
     def __init__(self, parent=None):
         super().__init__(parent)
         self.manager = QNetworkAccessManager(self)
+
+        self.timer = QTimer(self)
+        self.timer.timeout.connect(self.get_races)
+        self.timer.start(1000)
 
     def get_races(self):
         request = QNetworkRequest(
@@ -47,7 +50,7 @@ class RaceService(QObject):
         try:
             data = reply.readAll().data()
             races_json = json.loads(data.decode("utf-8"))
-            self.racesLoaded.emit([Race.from_dict(r) for r in races_json])
+            self.racesLoaded.emit([RaceModel.from_dict(r) for r in races_json])
             reply.deleteLater()
         except Exception as e:
             return []
@@ -72,10 +75,6 @@ class RaceService(QObject):
 
 
     def _on_create_race(self, reply):
-        if reply.error():
-            self.errorOccurred.emit(reply.errorString())
-        else:
-            race = json.loads(reply.readAll().data().decode())
-            self.raceCreated.emit(race)
-
+        race = json.loads(reply.readAll().data().decode())
+        self.raceCreated.emit(race)
         reply.deleteLater()

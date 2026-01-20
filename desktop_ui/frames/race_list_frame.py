@@ -2,7 +2,7 @@ from typing import List
 
 from PyQt6.QtWidgets import QFrame, QVBoxLayout, QLabel, QTableWidget, QTableWidgetItem, QFrame, QTableView
 from desktop_ui.config import DATE_FORMAT
-from desktop_ui.services.race_service import RaceService, Race
+from desktop_ui.services.race_service import RaceService, RaceModel
 from PyQt6.QtCore import QAbstractTableModel, Qt, QModelIndex, QTimer
 
 
@@ -12,17 +12,9 @@ class RaceListModel(QAbstractTableModel):
     def __init__(self, race_service: RaceService, parent=None):
         super().__init__(parent)
         self.race_service = race_service
-        self._races: List[Race] = []
+        self._races: List[RaceModel] = []
 
         self.race_service.racesLoaded.connect(self.on_races_loaded)
-
-        self.timer = QTimer(self)
-        self.timer.timeout.connect(self.fetch_races)
-        self.timer.start(1000)
-
-        self.fetch_races()
-
-    def fetch_races(self):
         self.race_service.get_races()
 
     def on_races_loaded(self, races):
