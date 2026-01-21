@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import List
 
-from sqlalchemy import create_engine, select, String, DateTime, Boolean, ForeignKey
+from sqlalchemy import create_engine, select, String, DateTime, Boolean, ForeignKey, Integer
 from sqlalchemy.orm import DeclarativeBase, Mapped, Session, relationship
 from sqlalchemy.testing.schema import mapped_column
 
@@ -90,6 +90,7 @@ class RaceCheckpoint(Base):
                                          autoincrement=False)
     checkpoint_id: Mapped[int] = mapped_column(ForeignKey("checkpoints.id"), primary_key=True,
                                                autoincrement=False)
+    order: Mapped[int] = mapped_column(Integer)
 
     race: Mapped[Race] = relationship(
         "Race",

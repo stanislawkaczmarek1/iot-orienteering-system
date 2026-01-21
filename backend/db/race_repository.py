@@ -2,7 +2,7 @@ from typing import List, Callable, Sequence
 
 from backend.db.models import Race, Runner, Checkpoint, RaceCheckpoint, RaceRunner, Event
 
-from sqlalchemy import select, delete
+from sqlalchemy import select, delete, func
 from sqlalchemy.orm import Session
 
 
@@ -55,8 +55,16 @@ class RaceRepository:
         return self.session.scalars(
             select(Checkpoint).join(RaceCheckpoint).where(RaceCheckpoint.race_id == race.id)).all()
 
-    def add_race_checkpoint(self, race: Race, checkpoint: Checkpoint):
-        self.session.add(RaceCheckpoint(race_id=race.id, checkpoint_id=checkpoint.id))
+    # if order is not specified, it adds next checkpoint in order
+    # if order is specified, then good luck because there can be checkpoints of same order
+    def add_race_checkpoint(self, race: Race, checkpoint: Checkpoint, order: int = None):
+        if order is None:
+            max_order = self.session.query(func.max(RaceCheckpoint.order)) \
+                                    .filter(RaceCheckpoint.race_id == race.id) \
+                                    .scalar()
+            order = (max_order or 0) + 1
+
+        self.session.add(RaceCheckpoint(race_id=race.id, checkpoint_id=checkpoint.id, order=order))
         self.session.commit()
 
     def delete_race_checkpoint(self, race: Race, checkpoint: Checkpoint):
@@ -78,6 +86,9 @@ class RaceRepository:
 
     # Event
 
+    def get_race_events(self, race: Race) -> Sequence[Event]:
+        return self.session.scalars(select(Event).where(Event.race_id == race.id)).all()
+    
     def get_race_runner_events(self, race: Race, runner: Runner) -> Sequence[Event]:
         return self.session.scalars(select(Event).where(Event.race_id == race.id, Event.runner_id == runner.id)).all()
 
