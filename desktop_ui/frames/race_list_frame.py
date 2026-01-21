@@ -1,47 +1,10 @@
 from typing import List
 
-from PyQt6.QtWidgets import QFrame, QVBoxLayout, QLabel, QTableWidget, QTableWidgetItem, QFrame, QTableView
+from PyQt6.QtWidgets import QFrame, QVBoxLayout, QLabel, QTableWidget, QTableWidgetItem, QFrame
+from PyQt6.QtCore import Qt
+
 from desktop_ui.config import DATE_FORMAT
 from desktop_ui.services.race_service import RaceService, RaceModel
-from PyQt6.QtCore import QAbstractTableModel, Qt, QModelIndex, QTimer
-
-
-class RaceListModel(QAbstractTableModel):
-    HEADERS = ["Name", "Date", "Location"]
-
-    def __init__(self, race_service: RaceService, parent=None):
-        super().__init__(parent)
-        self.race_service = race_service
-        self._races: List[RaceModel] = []
-
-        self.race_service.racesLoaded.connect(self.on_races_loaded)
-        self.race_service.get_races()
-
-    def on_races_loaded(self, races):
-        self.beginResetModel()
-        self._races = races
-        self.endResetModel()
-
-    def rowCount(self, parent=QModelIndex()):
-        return len(self._races)
-
-    def columnCount(self, parent=QModelIndex()):
-        return len(self.HEADERS)
-
-    def data(self, index, role=Qt.ItemDataRole.DisplayRole):
-        if not index.isValid() or role != Qt.ItemDataRole.DisplayRole:
-            return None
-        race = self._races[index.row()]
-        if index.column() == 0:
-            return race.name
-        elif index.column() == 1:
-            return race.date.strftime(DATE_FORMAT)
-        elif index.column() == 2:
-            return race.location
-
-    def headerData(self, section, orientation, role):
-        if orientation == Qt.Orientation.Horizontal and role == Qt.ItemDataRole.DisplayRole:
-            return self.HEADERS[section]
 
 
 class RaceListFrame(QFrame):
@@ -49,11 +12,10 @@ class RaceListFrame(QFrame):
         super().__init__(parent)
         self.race_service = race_service
 
-        self.model = RaceListModel(race_service, self)
-        self.table = QTableView()
-        self.table.setModel(self.model)
-
         self.init_ui()
+
+        self.race_service.racesLoaded.connect(self.load_races)
+        self.race_service.get_races()
 
     def init_ui(self):
         layout = QVBoxLayout(self)
@@ -63,6 +25,10 @@ class RaceListFrame(QFrame):
         title.setStyleSheet("font-size: 18px; font-weight: bold;")
         layout.addWidget(title)
 
+        self.table = QTableWidget()
+        self.table.setColumnCount(4)
+        self.table.setHorizontalHeaderLabels(["ID", "Name", "Date", "Active"])
+
         self.table.setEditTriggers(QTableWidget.EditTrigger.NoEditTriggers)
         self.table.setSelectionBehavior(QTableWidget.SelectionBehavior.SelectRows)
         self.table.setSelectionMode(QTableWidget.SelectionMode.SingleSelection)
@@ -71,3 +37,20 @@ class RaceListFrame(QFrame):
         self.table.verticalHeader().setVisible(False)
 
         layout.addWidget(self.table)
+
+
+    def load_races(self, races: List[RaceModel]):
+        self.table.setRowCount(len(races))
+
+        for row, race in enumerate(races):
+            self.table.setItem(row, 0, QTableWidgetItem(str(race.id)))
+
+            self.table.setItem(row, 1, QTableWidgetItem(race.name))
+
+            date_str = race.date.strftime(DATE_FORMAT)
+            self.table.setItem(row, 2, QTableWidgetItem(date_str))
+
+            active_item = QTableWidgetItem("Yes" if race.is_active else "No")
+            active_item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
+            self.table.setItem(row, 3, active_item)
+

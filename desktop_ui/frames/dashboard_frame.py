@@ -8,6 +8,7 @@ from desktop_ui.services.race_service import RaceModel, RaceService
 CARD_WIDTH = 150
 CARD_HEIGHT = 120
 
+
 class DashboardViewModel(QObject):
     dashboard_updated = pyqtSignal()
 
@@ -79,6 +80,18 @@ class RaceCard(QFrame):
         self.layout.addWidget(date_label)
 
 
+class EmptyList(QFrame):
+    def __init__(self, text: str, parent=None):
+        super().__init__(parent)
+
+        self.setFixedHeight(CARD_HEIGHT)
+
+        self.layout = QVBoxLayout(self)
+        self.setLayout(self.layout)
+        self.layout.setContentsMargins(16, 16, 16, 16)
+        self.layout.setAlignment(Qt.AlignmentFlag.AlignCenter | Qt.AlignmentFlag.AlignVCenter)
+
+        self.layout.addWidget(QLabel(text))
 
 
 class DashboardFrame(QFrame):
@@ -120,8 +133,14 @@ class DashboardFrame(QFrame):
         self.clear_layout(self.incoming_races_list_layout)
         self.clear_layout(self.historic_races_list_layout)
 
+        if len(self.model.visible_incoming) == 0:
+            self.incoming_races_list_layout.addWidget(EmptyList("No races incoming"))
+
         for race in self.model.visible_incoming:
             self.incoming_races_list_layout.addWidget(RaceCard(race))
+
+        if len(self.model.visible_historic) == 0:
+            self.historic_races_list_layout.addWidget(EmptyList("No historic races"))
 
         for race in self.model.visible_historic:
             self.historic_races_list_layout.addWidget(RaceCard(race))

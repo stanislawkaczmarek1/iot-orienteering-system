@@ -27,7 +27,7 @@ class RaceModel:
 
 class RaceService(QObject):
     racesLoaded = pyqtSignal(list)
-    raceCreated = pyqtSignal(RaceModel)
+    raceCreated = pyqtSignal(dict)
 
     def __init__(self, parent=None):
         super().__init__(parent)

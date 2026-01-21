@@ -85,7 +85,7 @@ class DatabaseManager:
 				raise
 	
 	async def health_check(self) -> bool:
-		"""Check if the database services is healthy."""
+		"""Check if the database connection is healthy."""
 		try:
 			logger.debug("Performing database health check")
 			async with self.get_session() as session:
@@ -137,10 +137,10 @@ async def db_lifespan_context():
 		logger.critical("Database health check failed during startup")
 		raise RuntimeError("Database health check failed")
 	
-	logger.info("Database services established successfully")
+	logger.info("Database connection established successfully")
 	
 	try:
 		yield
 	finally:
-		logger.info("Shutting down database services")
+		logger.info("Shutting down database connection")
 		await db_manager.close()
