@@ -10,7 +10,8 @@ if TYPE_CHECKING:
 
 class Checkpoint(Base):
   __tablename__ = "checkpoints"
-  id: Mapped[int] = mapped_column(primary_key=True)
+  id: Mapped[int] = mapped_column( primary_key=True)
+  uuid: Mapped[str] = mapped_column(String(36))
   name: Mapped[str] = mapped_column(String(30))
 
   race_checkpoints: Mapped[List["RaceCheckpoint"]] = relationship(

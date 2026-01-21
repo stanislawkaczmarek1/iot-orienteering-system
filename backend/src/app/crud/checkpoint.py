@@ -1,5 +1,5 @@
 from typing import Sequence
-from sqlalchemy import select
+from sqlalchemy import select, delete
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.checkpoint import Checkpoint
@@ -48,6 +48,6 @@ async def delete_checkpoint(db: AsyncSession, checkpoint_id: int) -> bool:
   if not checkpoint:
     return False
   
-  await db.delete(checkpoint)
+  await db.execute(delete(Checkpoint).where(Checkpoint.id == checkpoint_id))
   await db.commit()
   return True

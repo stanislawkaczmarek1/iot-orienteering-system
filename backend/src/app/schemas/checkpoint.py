@@ -2,11 +2,14 @@ from pydantic import BaseModel, ConfigDict
 
 
 class CheckpointBase(BaseModel):
+  id: int
+  uuid: str
   name: str
 
 
-class CheckpointCreate(CheckpointBase):
-  pass
+class CheckpointCreate(BaseModel):
+  uuid: str
+  name: str
 
 
 class CheckpointUpdate(BaseModel):

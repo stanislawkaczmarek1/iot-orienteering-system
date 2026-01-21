@@ -1,35 +1,35 @@
-
-from PyQt6.QtWidgets import  QMainWindow, QFrame, QVBoxLayout
+from PyQt6.QtWidgets import QMainWindow, QFrame, QVBoxLayout
 from sqlalchemy.orm import Session
 
-from backend.db.race_repository import RaceRepository
-
+from desktop_ui.frames.checkpoint_edit_frame import CheckpointsListFrame
+from desktop_ui.frames.dashboard_frame import DashboardFrame
 from desktop_ui.frames.race_list_frame import RaceListFrame
 from desktop_ui.frames.race_creator_frame import RaceCreatorFrame
 from desktop_ui.frames.header_menu_frame import HeaderMenuFrame
 
 from desktop_ui.config import WINDOW_TITLE, WINDOW_WIDTH, WINDOW_HEIGHT
+from desktop_ui.services.checkpoint_service import CheckpointService
+from desktop_ui.services.race_service import RaceService
+
 
 class MainWindow(QMainWindow):
 
-    MENU_ITEMS = [
-        ("Race List", lambda repository: RaceListFrame(repository)),
-        ("Race Creator", lambda repository: RaceCreatorFrame(repository)),
-    ]
-
-    def __init__(self, session: "Session", parent=None):
+    def __init__(self, parent=None):
         super().__init__(parent)
+
+        self.race_service = RaceService()
+        self.checkpoint_service = CheckpointService()
+        self.menu_items = [
+            ("Dashboard", lambda: DashboardFrame(self.race_service)),
+            ("Race List", lambda: RaceListFrame(self.race_service)),
+            ("Race Creator", lambda: RaceCreatorFrame(self.race_service)),
+            ("Checkpoints", lambda: CheckpointsListFrame(self.checkpoint_service)),
+        ]
 
         self.setWindowTitle(WINDOW_TITLE)
         self.resize(WINDOW_WIDTH, WINDOW_HEIGHT)
 
-        race_repository = RaceRepository(session)
-        
-        menu_items = [
-            (title, lambda repo_factory = factory: repo_factory(race_repository))
-            for title, factory in MainWindow.MENU_ITEMS
-        ]
-        self.header_menu = HeaderMenuFrame(menu_items)
+        self.header_menu = HeaderMenuFrame(self.menu_items)
         self.header_menu.switch_to(0)
 
         central_widget = QFrame()
@@ -39,6 +39,6 @@ class MainWindow(QMainWindow):
         central_widget.setLayout(central_layout)
 
         central_layout.addWidget(self.header_menu)
-        central_layout.addWidget(self.header_menu.stacked_widget) 
+        central_layout.addWidget(self.header_menu.stacked_widget)
 
         self.setCentralWidget(central_widget)
