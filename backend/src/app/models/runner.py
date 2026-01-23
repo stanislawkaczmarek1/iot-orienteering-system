@@ -1,5 +1,5 @@
 from typing import TYPE_CHECKING, List
-from sqlalchemy import String
+from sqlalchemy import String, Integer
 from sqlalchemy.orm import Mapped, relationship, mapped_column
 
 from app.core.db import Base
@@ -11,7 +11,7 @@ if TYPE_CHECKING:
 class Runner(Base):
   __tablename__ = "runners"
   id: Mapped[int] = mapped_column(primary_key=True)
-  rfid_uid: Mapped[str] = mapped_column(String(30))
+  rfid_uid: Mapped[int] = mapped_column(Integer())
   name: Mapped[str] = mapped_column(String(30))
   surname: Mapped[str] = mapped_column(String(30))
 

@@ -1,9 +1,11 @@
 from typing import Sequence
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
+from fastapi import HTTPException, status
 
 from app.models.runner import Runner
 from app.schemas.runner import RunnerCreate, RunnerUpdate
+
 
 
 async def get_runner(db: AsyncSession, runner_id: int) -> Runner | None:
@@ -20,7 +22,14 @@ async def get_runners(db: AsyncSession, skip: int = 0, limit: int = 100) -> Sequ
 
 async def create_runner(db: AsyncSession, runner_in: RunnerCreate) -> Runner:
   """Create a new runner."""
-  runner = Runner(**runner_in.model_dump())
+  runner_with_rfid_uid = await get_runner_by_rfid(db, runner_in.rfid_uid)
+  if runner_with_rfid_uid:
+    raise HTTPException(
+      status_code=status.HTTP_409_CONFLICT,
+      detail=f"Runner with rfid_uid: {str(runner_in.rfid_uid)} already exists",
+    )
+
+  runner = Runner(**runner_in.model_dump(), name="", surname="")
   db.add(runner)
   await db.commit()
   await db.refresh(runner)
@@ -51,3 +60,10 @@ async def delete_runner(db: AsyncSession, runner_id: int) -> bool:
   await db.delete(runner)
   await db.commit()
   return True
+
+async def get_runner_by_rfid(db: AsyncSession, rfid: str) -> Runner | None:
+  """Get a runner by rfid."""
+  result = await db.execute(
+    select(Runner).where(Runner.rfid_uid == rfid)
+  )
+  return result.scalar_one_or_none()

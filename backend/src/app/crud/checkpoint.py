@@ -20,7 +20,7 @@ async def get_checkpoints(db: AsyncSession, skip: int = 0, limit: int = 100) -> 
 
 async def create_checkpoint(db: AsyncSession, checkpoint_in: CheckpointCreate) -> Checkpoint:
   """Create a new checkpoint."""
-  checkpoint = Checkpoint(**checkpoint_in.model_dump())
+  checkpoint = Checkpoint(name="", uuid=checkpoint_in.checkpoint_id)
   db.add(checkpoint)
   await db.commit()
   await db.refresh(checkpoint)
@@ -51,3 +51,8 @@ async def delete_checkpoint(db: AsyncSession, checkpoint_id: int) -> bool:
   await db.execute(delete(Checkpoint).where(Checkpoint.id == checkpoint_id))
   await db.commit()
   return True
+
+async def get_checkpoint_by_uuid(db: AsyncSession, uuid: str) -> Checkpoint | None:
+  """Get a single checkpoint by UUID."""
+  result = await db.execute(select(Checkpoint).where(Checkpoint.uuid == uuid))
+  return result.scalar_one_or_none()
