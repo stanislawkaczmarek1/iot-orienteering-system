@@ -1,3 +1,4 @@
+from datetime import datetime
 import logging
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -5,6 +6,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.db import get_db
 from app.schemas.event import EventCreate, EventResponse
 from app.crud import event as event_crud
+
+from app.models.event import Event
 
 logger = logging.getLogger(__name__)
 
@@ -17,7 +20,7 @@ async def create_event(
   db: AsyncSession = Depends(get_db)
 ):
   """Create a new event (runner checkpoint scan)."""
-  logger.debug(f"Creating event: race={event_in.race_id}, runner={event_in.runner_id}, checkpoint={event_in.checkpoint_id}")
+  logger.debug(f"Creating event: runner={event_in.rfid_uid}, checkpoint={event_in.checkpoint_id}")
   return await event_crud.create_event(db, event_in)
 
 

@@ -17,7 +17,7 @@ async def create_runner(
   db: AsyncSession = Depends(get_db)
 ):
   """Create a new runner."""
-  logger.debug(f"Creating runner: {runner_in.name} {runner_in.surname}")
+  logger.debug(f"Creating runner with rfid_uid: {runner_in.rfid_uid}: ")
   return await runner_crud.create_runner(db, runner_in)
 
 

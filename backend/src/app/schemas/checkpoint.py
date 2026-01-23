@@ -8,8 +8,8 @@ class CheckpointBase(BaseModel):
 
 
 class CheckpointCreate(BaseModel):
-  uuid: str
-  name: str
+  checkpoint_id: str
+  timestamp: str
 
 
 class CheckpointUpdate(BaseModel):

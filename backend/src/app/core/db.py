@@ -32,7 +32,7 @@ class DatabaseManager:
 	
 	def _get_database_url(self) -> str:
 		"""Construct database URL from settings."""
-		return "sqlite+aiosqlite:///:memory:"
+		return "sqlite+aiosqlite:///db/database.db"
 
 	async def initialize(self) -> None:
 		"""Initialize the database engine and session factory."""

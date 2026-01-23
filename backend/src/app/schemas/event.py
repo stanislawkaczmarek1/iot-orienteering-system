@@ -9,8 +9,10 @@ class EventBase(BaseModel):
   timestamp: datetime
 
 
-class EventCreate(EventBase):
-  pass
+class EventCreate(BaseModel):
+  checkpoint_id: str
+  rfid_uid: int
+  timestamp: str
 
 
 class EventResponse(EventBase):

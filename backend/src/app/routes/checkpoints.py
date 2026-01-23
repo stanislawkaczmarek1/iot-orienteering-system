@@ -17,7 +17,7 @@ async def create_checkpoint(
   db: AsyncSession = Depends(get_db)
 ):
   """Create a new checkpoint."""
-  logger.debug(f"Creating checkpoint: {checkpoint_in.name}")
+  logger.debug(f"Creating checkpoint: {checkpoint_in.checkpoint_id}")
   return await checkpoint_crud.create_checkpoint(db, checkpoint_in)
 
 

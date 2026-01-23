@@ -118,3 +118,13 @@ async def remove_race_runner(db: AsyncSession, race_id: int, runner_id: int) -> 
   )
   await db.commit()
   return result.rowcount > 0
+
+async def get_active_race_with_checkpoint(db: AsyncSession, checkpoint_id: int) -> Race | None:
+  result = await db.execute(
+    select(Race).join(RaceCheckpoint).where((Race.is_active == True) & (RaceCheckpoint.checkpoint_id == checkpoint_id))
+  )
+  return result.scalar_one_or_none()
+
+
+
+

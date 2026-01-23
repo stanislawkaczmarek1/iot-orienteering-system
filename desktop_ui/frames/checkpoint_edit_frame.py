@@ -10,7 +10,7 @@ from desktop_ui.services.checkpoint_service import CheckpointService, Checkpoint
 
 
 class CheckpointsListFrame(QFrame):
-    HEADERS = ["Name", "UUID", ""]
+    HEADERS = ["ID", "Name", "UUID", ""]
 
     def __init__(self, checkpoint_service: CheckpointService, parent=None):
         super().__init__(parent)
@@ -35,8 +35,8 @@ class CheckpointsListFrame(QFrame):
         layout.addWidget(title)
 
         header = self.table.horizontalHeader()
-        header.setSectionResizeMode(0, QHeaderView.ResizeMode.Stretch)
         header.setSectionResizeMode(1, QHeaderView.ResizeMode.Stretch)
+        header.setSectionResizeMode(2, QHeaderView.ResizeMode.Stretch)
         # header.setSectionResizeMode(2, QHeaderView.ResizeMode.ResizeToContents)
 
         self.table.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
@@ -53,11 +53,14 @@ class CheckpointsListFrame(QFrame):
 
     def draw_table(self):
         for row, checkpoint in enumerate(self.checkpoints):
-            name_item = QTableWidgetItem(checkpoint.name)
-            name_item.setFlags(name_item.flags() | Qt.ItemFlag.ItemIsEditable)
-            self.table.setItem(row, 0, name_item)
+            id_item = QTableWidgetItem(str(checkpoint.id))
+            id_item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
+            self.table.setItem(row, 0, id_item)
 
-            self.table.setItem(row, 1, QTableWidgetItem(str(checkpoint.uuid)))
+            name_item = QTableWidgetItem(checkpoint.name)
+            self.table.setItem(row, 1, name_item)
+
+            self.table.setItem(row, 2, QTableWidgetItem(str(checkpoint.uuid)))
 
             d_button = QPushButton("Delete")
             d_button.setFixedSize(70, 25)
@@ -74,9 +77,10 @@ class CheckpointsListFrame(QFrame):
             layout.addWidget(e_button)
             layout.addWidget(d_button)
 
-            self.table.setCellWidget(row, 2, container)
+            self.table.setCellWidget(row, 3, container)
 
-        self.table.resizeColumnToContents(2)
+        self.table.resizeColumnToContents(0)
+        self.table.resizeColumnToContents(3)
 
 
     def on_delete(self, id: int):

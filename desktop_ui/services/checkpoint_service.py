@@ -35,6 +35,7 @@ class CheckpointService(QObject):
         request = QNetworkRequest(
             QUrl("http://127.0.0.1:8000/api/checkpoints")
         )
+        request.setTransferTimeout(10000)
         reply = self.manager.get(request)
         reply.finished.connect(
             lambda r=reply: self._on_get_checkpoints(r)
@@ -47,8 +48,8 @@ class CheckpointService(QObject):
             self.checkpointsLoaded.emit([CheckpointModel.from_dict(r) for r in checkpoints_json])
             reply.deleteLater()
         except Exception as e:
-            print(e)
-            return []
+            pass
+            # print(e)
 
     def delete_checkpoint(self, checkpoint_id):
         request = QNetworkRequest(
