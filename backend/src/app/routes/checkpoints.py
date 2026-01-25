@@ -1,5 +1,5 @@
 import logging
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.db import get_db
@@ -25,10 +25,14 @@ async def create_checkpoint(
 async def list_checkpoints(
   skip: int = 0,
   limit: int = 100,
-  db: AsyncSession = Depends(get_db)
+  db: AsyncSession = Depends(get_db),
+  race_id: int | None = Query(None)
 ):
   """Get all checkpoints with pagination."""
   logger.debug(f"Listing checkpoints (skip={skip}, limit={limit})")
+  if race_id is not None:
+    return await checkpoint_crud.get_checkpoints_of_race(db, race_id)
+
   return await checkpoint_crud.get_checkpoints(db, skip, limit)
 
 

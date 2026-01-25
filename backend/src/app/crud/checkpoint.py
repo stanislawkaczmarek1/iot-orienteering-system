@@ -3,6 +3,7 @@ from sqlalchemy import select, delete
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.checkpoint import Checkpoint
+from app.models.race import RaceCheckpoint
 from app.schemas.checkpoint import CheckpointCreate, CheckpointUpdate
 
 
@@ -11,6 +12,9 @@ async def get_checkpoint(db: AsyncSession, checkpoint_id: int) -> Checkpoint | N
   result = await db.execute(select(Checkpoint).where(Checkpoint.id == checkpoint_id))
   return result.scalar_one_or_none()
 
+async def get_checkpoints_of_race(db: AsyncSession, race_id: int) ->  Sequence[Checkpoint]:
+  result = await db.execute(select(Checkpoint).join(RaceCheckpoint).where(RaceCheckpoint.race_id == race_id))
+  return result.scalars().all()
 
 async def get_checkpoints(db: AsyncSession, skip: int = 0, limit: int = 100) -> Sequence[Checkpoint]:
   """Get all checkpoints with pagination."""

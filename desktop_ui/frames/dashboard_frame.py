@@ -4,6 +4,7 @@ from PyQt6.QtCore import Qt, QObject, pyqtSignal
 from PyQt6.QtWidgets import QFrame, QVBoxLayout, QLabel, QHBoxLayout
 
 from desktop_ui.services.race_service import RaceModel, RaceService
+from desktop_ui.content_controller import ContentController 
 
 CARD_WIDTH = 150
 CARD_HEIGHT = 120
@@ -95,7 +96,7 @@ class EmptyList(QFrame):
 
 
 class DashboardFrame(QFrame):
-    def __init__(self, race_service: RaceService, parent=None):
+    def __init__(self, content_controller: ContentController, race_service: RaceService, parent=None):
         super(DashboardFrame, self).__init__(parent)
         self.model = DashboardViewModel(race_service)
         self.model.dashboard_updated.connect(self.refresh_ui)

@@ -1,6 +1,6 @@
 from datetime import datetime
 import logging
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.db import get_db
@@ -28,10 +28,13 @@ async def create_event(
 async def list_events(
   skip: int = 0,
   limit: int = 100,
-  db: AsyncSession = Depends(get_db)
+  db: AsyncSession = Depends(get_db),
+  race_id: int | None = Query(None)
 ):
   """Get all events with pagination."""
   logger.debug(f"Listing events (skip={skip}, limit={limit})")
+  if race_id is not None:
+    return await event_crud.get_events_of_race(db, race_id ,skip, limit)
   return await event_crud.get_events(db, skip, limit)
 
 

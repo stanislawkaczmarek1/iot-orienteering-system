@@ -4,7 +4,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi import HTTPException, status
 
 from app.models.runner import Runner
+from app.models.race import RaceRunner
 from app.schemas.runner import RunnerCreate, RunnerUpdate
+
 
 
 
@@ -19,6 +21,10 @@ async def get_runners(db: AsyncSession, skip: int = 0, limit: int = 100) -> Sequ
   result = await db.execute(select(Runner).offset(skip).limit(limit))
   return result.scalars().all()
 
+async def get_runners_of_race(db: AsyncSession, race_id: int, skip: int = 0, limit: int = 100) -> Sequence[Runner]:
+  """Get all runners with pagination."""
+  result = await db.execute(select(Runner).join(RaceRunner).where(RaceRunner.race_id == race_id).offset(skip).limit(limit))
+  return result.scalars().all()
 
 async def create_runner(db: AsyncSession, runner_in: RunnerCreate) -> Runner:
   """Create a new runner."""

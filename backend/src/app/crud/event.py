@@ -24,6 +24,11 @@ async def get_events(db: AsyncSession, skip: int = 0, limit: int = 100) -> Seque
   result = await db.execute(select(Event).offset(skip).limit(limit))
   return result.scalars().all()
 
+async def get_events_of_race(db: AsyncSession, race_id: int, skip: int = 0, limit: int = 100) -> Sequence[Event]:
+  """Get all events with pagination."""
+  result = await db.execute(select(Event).where(Event.race_id == race_id).offset(skip).limit(limit))
+  return result.scalars().all()
+
 
 async def get_race_runner_events(db: AsyncSession, race_id: int, runner_id: int) -> Sequence[Event]:
   """Get all events for a specific race and runner."""

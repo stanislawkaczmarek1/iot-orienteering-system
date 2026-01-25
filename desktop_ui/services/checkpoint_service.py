@@ -1,6 +1,6 @@
 import json
 from dataclasses import dataclass
-
+from typing import Callable
 from PyQt6.QtCore import QObject, pyqtSignal, QTimer, QUrl
 from PyQt6.QtNetwork import QNetworkAccessManager, QNetworkRequest
 
@@ -87,3 +87,20 @@ class CheckpointService(QObject):
     def _update_checkpoint_name(self, reply):
         reply.deleteLater()
         self.get_checkpoints()
+
+
+    def get_checkpoints_of_race(self, race_id: int, callback: Callable[[list], None]):
+        url = f"http://127.0.0.1:8000/api/checkpoints?race_id={race_id}"
+        request = QNetworkRequest(QUrl(url))
+        reply = self.manager.get(request)
+        reply.finished.connect(lambda r=reply: self._on_get_checkpoints_of_race(r, callback))
+
+
+    def _on_get_checkpoints_of_race(self, reply, callback: Callable[[list], None]):
+        try:
+            data = reply.readAll().data()
+            checkpoints_json = json.loads(data.decode("utf-8"))
+            checkpoints = [CheckpointModel.from_dict(r) for r in checkpoints_json]
+            callback(checkpoints)
+        finally:
+            reply.deleteLater()

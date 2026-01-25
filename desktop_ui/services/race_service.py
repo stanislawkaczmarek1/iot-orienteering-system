@@ -1,7 +1,7 @@
 import json
 from dataclasses import dataclass
 from datetime import datetime
-
+from typing import Callable
 from PyQt6.QtCore import QObject, pyqtSignal, QUrl, QTimer
 from PyQt6.QtNetwork import QNetworkAccessManager, QNetworkRequest
 
@@ -45,6 +45,21 @@ class RaceService(QObject):
         reply.finished.connect(
             lambda r=reply: self._on_get_races(r)
         )
+
+    def get_race_by_id(self, race_id: int, callback: Callable[RaceModel,None]):
+        request = QNetworkRequest(QUrl(f"http://127.0.0.1:8000/api/races/{race_id}"))
+        reply = self.manager.get(request)
+        reply.finished.connect(lambda r=reply: self._on_get_race_by_id(r,callback))
+
+    def _on_get_race_by_id(self, reply, callback: Callable[RaceModel, None]):
+        try:
+            data = reply.readAll().data()
+            j = json.loads(data.decode("utf-8"))
+            race = RaceModel.from_dict(j)
+            callback(race)
+        finally:
+            reply.deleteLater()
+
 
     def _on_get_races(self, reply):
         try:

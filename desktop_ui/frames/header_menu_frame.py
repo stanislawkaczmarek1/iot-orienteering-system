@@ -2,6 +2,8 @@ from typing import Callable
 
 from PyQt6.QtWidgets import QFrame, QWidget, QHBoxLayout, QPushButton, QStackedLayout
 
+from desktop_ui.content_controller import ContentController
+
 class HeaderMenuButton(QPushButton):
     def __init__(self, text, parent=None):
         super().__init__(text, parent)
@@ -34,9 +36,8 @@ class HeaderMenuButton(QPushButton):
 
 
 class HeaderMenuFrame(QFrame):
-    def __init__(self, menu_items: list[tuple[str, QFrame | Callable]], parent=None):
+    def __init__(self, menu_items: list[tuple[str, Callable]], content_controller: ContentController,parent=None):
         super().__init__(parent)
-        # self.setFrameShape(QFrame.Shape.StyledPanel)
         self.setFixedHeight(50)
 
         layout = QHBoxLayout(self)
@@ -47,31 +48,23 @@ class HeaderMenuFrame(QFrame):
         self.menu_factories = []
         self.menu_frames = []
 
-        self.stacked_layout = QStackedLayout()
-        self.stacked_widget = QWidget()
-        self.stacked_widget.setLayout(self.stacked_layout)
-
-        for index, (title, frame_or_factory) in enumerate(menu_items):
+        for index, (title, frame_factory) in enumerate(menu_items):
             btn = HeaderMenuButton(title)
             layout.addWidget(btn)
-            btn.clicked.connect(lambda _, i=index: self.switch_to(i))
+            # Connect to parent controller if exists
+            btn.clicked.connect(lambda _, i=index: content_controller.switch_to_index(i))
             self.menu_buttons.append(btn)
-            self.menu_factories.append(frame_or_factory)
+            self.menu_factories.append(frame_factory)
             self.menu_frames.append(None)
 
         layout.addStretch()
 
-        self.switch_to(0)
-
-    def switch_to(self, index: int):
+    def get_frame(self, index: int) -> QWidget:
         if self.menu_frames[index] is None:
             factory = self.menu_factories[index]
-            if callable(factory):
-                frame = factory()
-            else:
-                frame = factory
-            self.menu_frames[index] = frame
-            self.stacked_layout.addWidget(frame)
-        self.stacked_layout.setCurrentWidget(self.menu_frames[index])
+            self.menu_frames[index] = factory() if callable(factory) else factory
+        return self.menu_frames[index]
+
+    def set_active(self, index: int):
         for i, btn in enumerate(self.menu_buttons):
-            btn.set_active(index == i)
+            btn.set_active(i == index)
