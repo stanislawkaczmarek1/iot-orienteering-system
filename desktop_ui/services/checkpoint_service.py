@@ -3,7 +3,9 @@ from dataclasses import dataclass
 from typing import Callable
 from PyQt6.QtCore import QObject, pyqtSignal, QTimer, QUrl
 from PyQt6.QtNetwork import QNetworkAccessManager, QNetworkRequest
-
+from typing import List
+import asyncio
+import aiohttp
 
 @dataclass
 class CheckpointModel:
@@ -40,6 +42,7 @@ class CheckpointService(QObject):
         reply.finished.connect(
             lambda r=reply: self._on_get_checkpoints(r)
         )
+
 
     def _on_get_checkpoints(self, reply):
         try:
@@ -104,3 +107,29 @@ class CheckpointService(QObject):
             callback(checkpoints)
         finally:
             reply.deleteLater()
+
+
+    def add_checkpoints_to_race(self, race_id: int, checkpoints: list, on_finished=None):
+        if not checkpoints:
+            if on_finished:
+                on_finished()
+            return
+
+        self._pending_replies = len(checkpoints)
+
+        for x in checkpoints:
+            url = f"http://127.0.0.1:8000/api/races/{race_id}/checkpoints/{x}"
+            request = QNetworkRequest(QUrl(url))
+            request.setHeader(QNetworkRequest.KnownHeaders.ContentTypeHeader, "application/json")
+            reply = self.manager.post(request, None)
+
+            reply.finished.connect(lambda r=reply: self._on_add_checkpoint(r, on_finished))
+
+    def _on_add_checkpoint(self, reply, on_finished=None):
+        if reply.error():
+            print(f"Error adding checkpoint: {reply.errorString()}")
+        reply.deleteLater()
+
+        self._pending_replies -= 1
+        if self._pending_replies == 0 and on_finished:
+            on_finished()

@@ -110,6 +110,7 @@ class RaceDetailFrame(QFrame):
         self.table.verticalHeader().setVisible(False)
         self.table.setEditTriggers(QTableWidget.EditTrigger.NoEditTriggers)
         self.table.setAlternatingRowColors(True)
+        self.table.setSortingEnabled(True)
 
         event_map = vm.events_map
 

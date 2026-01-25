@@ -93,3 +93,14 @@ class RaceService(QObject):
         race = json.loads(reply.readAll().data().decode())
         self.raceCreated.emit(race)
         reply.deleteLater()
+
+
+
+    def delete_race(self, race_id: int):
+        request = QNetworkRequest(QUrl(f"http://127.0.0.1:8000/api/races/{race_id}"))
+        reply = self.manager.deleteResource(request)
+        reply.finished.connect(lambda r=reply: self._on_delete_event(r))
+
+    def _on_delete_event(self, reply):
+        reply.deleteLater()
+        self.get_races()

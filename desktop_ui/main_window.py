@@ -32,7 +32,7 @@ class MainWindow(QMainWindow):
         self.menu_items = [
             ("Dashboard", lambda: DashboardFrame(self.content_controller,self.race_service)),
             ("Race List", lambda: RaceListFrame(self.content_controller, self.race_service, self.runner_service, self.event_service, self.checkpoint_service)),
-            ("Race Creator", lambda: RaceCreatorFrame(self.race_service)),
+            ("Race Creator", lambda: RaceCreatorFrame(self.race_service,self.checkpoint_service)),
             ("Checkpoints", lambda: CheckpointsListFrame(self.checkpoint_service)),
         ]
 
