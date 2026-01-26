@@ -5,6 +5,7 @@ from desktop_ui.frames.checkpoint_edit_frame import CheckpointsListFrame
 from desktop_ui.frames.dashboard_frame import DashboardFrame
 from desktop_ui.frames.race_list_frame import RaceListFrame
 from desktop_ui.frames.race_creator_frame import RaceCreatorFrame
+from desktop_ui.frames.runners_frame import RunnersFrame
 from desktop_ui.frames.header_menu_frame import HeaderMenuFrame
 from desktop_ui.content_controller import ContentController
 
@@ -34,6 +35,7 @@ class MainWindow(QMainWindow):
             ("Race List", lambda: RaceListFrame(self.content_controller, self.race_service, self.runner_service, self.event_service, self.checkpoint_service)),
             ("Race Creator", lambda: RaceCreatorFrame(self.race_service,self.checkpoint_service)),
             ("Checkpoints", lambda: CheckpointsListFrame(self.checkpoint_service)),
+            ("Runners", lambda: RunnersFrame(self.runner_service)),
         ]
 
         self.header_menu = HeaderMenuFrame(self.menu_items, self.content_controller, self)

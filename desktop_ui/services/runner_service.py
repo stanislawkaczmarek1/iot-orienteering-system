@@ -79,12 +79,37 @@ class RunnerService(QObject):
         reply = self.manager.get(request)
         reply.finished.connect(lambda r=reply: self._on_get_runners_of_race(r, callback))
 
-
     def _on_get_runners_of_race(self, reply, callback: Callable[[list], None]):
         try:
             data = reply.readAll().data()
             j = json.loads(data.decode("utf-8"))
             items = [RunnerModel.from_dict(x) for x in j]
             callback(items)
+        finally:
+            reply.deleteLater()
+
+    def create_runner(self, rfid_uid: int, name: str = "", surname: str = ""):
+        payload = {"rfid_uid": rfid_uid}
+        
+        request = QNetworkRequest(QUrl(self.base_url))
+        request.setHeader(QNetworkRequest.KnownHeaders.ContentTypeHeader, "application/json")
+        
+        reply = self.manager.post(request, json.dumps(payload).encode("utf-8"))
+        reply.finished.connect(lambda r=reply: self._on_create_runner(r, name, surname))
+
+    def _on_create_runner(self, reply, name: str, surname: str):
+        try:
+            data = reply.readAll().data()
+            response = json.loads(data.decode("utf-8"))
+            
+            # If name or surname provided, update the runner
+            if name or surname:
+                runner_id = response.get("id")
+                if runner_id:
+                    self.update_runner_name(runner_id, name, surname)
+            else:
+                self.get_runners()
+        except Exception as e:
+            print("Failed to create runner:", e)
         finally:
             reply.deleteLater()

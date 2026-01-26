@@ -32,7 +32,12 @@ class DatabaseManager:
 	
 	def _get_database_url(self) -> str:
 		"""Construct database URL from settings."""
-		return "sqlite+aiosqlite:///db/database.db"
+		from pathlib import Path
+		# Create db directory if it doesn't exist
+		db_dir = Path(__file__).parent.parent.parent.parent / "db"
+		db_dir.mkdir(exist_ok=True)
+		db_path = db_dir / "database.db"
+		return f"sqlite+aiosqlite:///{db_path}"
 
 	async def initialize(self) -> None:
 		"""Initialize the database engine and session factory."""

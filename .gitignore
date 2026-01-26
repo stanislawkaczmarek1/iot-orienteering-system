@@ -29,6 +29,7 @@ backend/db/
 backend/*.db
 backend/*.sqlite
 backend/*.sqlite3
+uv.lock
 
 # Environment variables
 .env
