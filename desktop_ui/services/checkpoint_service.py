@@ -69,7 +69,6 @@ class CheckpointService(QObject):
         self.get_checkpoints()
 
     def update_checkpoint_name(self, checkpoint_id, new_name):
-        print("update checkpoint name")
         request = QNetworkRequest(
             QUrl("http://127.0.0.1:8000/api/checkpoints/{}".format(checkpoint_id))
         )
@@ -109,27 +108,56 @@ class CheckpointService(QObject):
             reply.deleteLater()
 
 
-    def add_checkpoints_to_race(self, race_id: int, checkpoints: list, on_finished=None):
+    def add_checkpoints_to_race(self, race_id: int, checkpoints: List[int], on_finished=None):
         if not checkpoints:
             if on_finished:
                 on_finished()
             return
 
-        self._pending_replies = len(checkpoints)
+        self._pending_checkpoints_list = checkpoints.copy()
+        self._race_id_for_add = race_id
+        self._on_finished_add = on_finished
 
-        for x in checkpoints:
-            url = f"http://127.0.0.1:8000/api/races/{race_id}/checkpoints/{x}"
-            request = QNetworkRequest(QUrl(url))
-            request.setHeader(QNetworkRequest.KnownHeaders.ContentTypeHeader, "application/json")
-            reply = self.manager.post(request, None)
+        self._add_next_checkpoint()
 
-            reply.finished.connect(lambda r=reply: self._on_add_checkpoint(r, on_finished))
+    def _add_next_checkpoint(self):
+        if not self._pending_checkpoints_list:
+            if self._on_finished_add:
+                self._on_finished_add()
+            return
 
-    def _on_add_checkpoint(self, reply, on_finished=None):
-        if reply.error():
-            print(f"Error adding checkpoint: {reply.errorString()}")
+        checkpoint_id = self._pending_checkpoints_list.pop(0)
+        url = f"http://127.0.0.1:8000/api/races/{self._race_id_for_add}/checkpoints/{checkpoint_id}"
+        request = QNetworkRequest(QUrl(url))
+        request.setHeader(QNetworkRequest.KnownHeaders.ContentTypeHeader, "application/json")
+        reply = self.manager.post(request, None)
+
+        reply.finished.connect(lambda r=reply: self._on_add_checkpoint_finished(r))
+
+    def _on_add_checkpoint_finished(self, reply):
         reply.deleteLater()
+        self._add_next_checkpoint()
 
-        self._pending_replies -= 1
-        if self._pending_replies == 0 and on_finished:
-            on_finished()
+    def remove_all_checkpoints_from_race(self, race_id: int, on_finished=None):
+        url = QUrl(f"http://127.0.0.1:8000/api/races/{race_id}/checkpoints/{-1}")
+        request = QNetworkRequest(url)
+
+        reply = self.manager.deleteResource(request)
+        reply.finished.connect(lambda r=reply: self._on_remove_all_finished(r,on_finished))
+
+    def _on_remove_all_finished(self, reply, on_finished=None):
+        reply.deleteLater()
+        if on_finished:
+            on_finished() 
+
+
+
+    def replace_race_checkpoints(self, race_id: int, new_checkpoints: List[int], on_finished=None):
+        self.remove_all_checkpoints_from_race( race_id,
+        on_finished=lambda: self.add_checkpoints_to_race(
+            race_id,
+            new_checkpoints,
+            on_finished
+        )
+    )
+    

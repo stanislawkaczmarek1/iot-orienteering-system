@@ -1,12 +1,12 @@
-from typing import Sequence
-from sqlalchemy import select, delete
+from typing import Sequence, List
+from sqlalchemy import select, delete, func
 from sqlalchemy.ext.asyncio import AsyncSession
+from datetime import datetime
 
 from app.models.race import Race, RaceCheckpoint, RaceRunner
 from app.models.checkpoint import Checkpoint
 from app.models.runner import Runner
 from app.schemas.race import RaceCreate, RaceUpdate
-
 
 # Race CRUD operations
 async def get_race(db: AsyncSession, race_id: int) -> Race | None:
@@ -63,13 +63,23 @@ async def get_race_checkpoints(db: AsyncSession, race_id: int) -> Sequence[Check
     select(Checkpoint)
     .join(RaceCheckpoint)
     .where(RaceCheckpoint.race_id == race_id)
+    .order_by(RaceCheckpoint.order.asc())
   )
   return result.scalars().all()
 
 
 async def add_race_checkpoint(db: AsyncSession, race_id: int, checkpoint_id: int) -> RaceCheckpoint:
   """Add a checkpoint to a race."""
-  race_checkpoint = RaceCheckpoint(race_id=race_id, checkpoint_id=checkpoint_id)
+
+  r = await db.execute(
+    select(func.max(RaceCheckpoint.order))
+    .where(RaceCheckpoint.race_id == race_id)
+  )
+  max_order = r.scalar()
+  if max_order is None:
+    max_order = 1
+    
+  race_checkpoint = RaceCheckpoint(race_id=race_id, checkpoint_id=checkpoint_id, order=(max_order + 1))
   db.add(race_checkpoint)
   await db.commit()
   await db.refresh(race_checkpoint)
@@ -98,6 +108,28 @@ async def get_race_runners(db: AsyncSession, race_id: int) -> Sequence[Runner]:
   )
   return result.scalars().all()
 
+async def delete_race_checkpoints(db: AsyncSession, race_id: int):
+  result = await db.execute(
+    delete(RaceCheckpoint).where(
+      RaceCheckpoint.race_id == race_id
+    )
+  )
+  await db.commit()
+  return True
+
+
+async def replace_race_checkpoints(db: AsyncSession, race_id: int, new_checkpoints: List[int]):
+  result = await db.execute(
+    delete(RaceCheckpoint).where(
+      RaceCheckpoint.race_id == race_id
+    )
+  )
+  await db.commit()
+  i = 1
+  for c in new_checkpoints:
+    db.add( RaceCheckpoint(race_id=race_id, checkpoint_id=c, order=i))
+    i += 1
+  await db.commit()
 
 async def add_race_runner(db: AsyncSession, race_id: int, runner_id: int) -> RaceRunner:
   """Add a runner to a race."""

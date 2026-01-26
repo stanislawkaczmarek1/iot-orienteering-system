@@ -104,3 +104,22 @@ class RaceService(QObject):
     def _on_delete_event(self, reply):
         reply.deleteLater()
         self.get_races()
+
+
+    def update_race(self, race_id: int, payload: dict):
+        url = f"http://127.0.0.1:8000/api/races/{race_id}"
+        request = QNetworkRequest(QUrl(url))
+        request.setHeader(
+            QNetworkRequest.KnownHeaders.ContentTypeHeader,
+            "application/json",
+        )
+
+        reply = self.manager.put(
+            request,
+            json.dumps(payload).encode("utf-8"),
+        )
+        reply.finished.connect(lambda r=reply: self._on_update_race(r))
+
+
+    def _on_update_race(self, reply):
+        reply.deleteLater()

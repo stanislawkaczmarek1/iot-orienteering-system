@@ -1,6 +1,6 @@
 from datetime import datetime
 from typing import TYPE_CHECKING, List
-from sqlalchemy import String, DateTime, Boolean, ForeignKey
+from sqlalchemy import String, DateTime, Boolean, ForeignKey, Integer
 from sqlalchemy.orm import Mapped, relationship, mapped_column
 
 from app.core.db import Base
@@ -42,6 +42,8 @@ class RaceCheckpoint(Base):
     primary_key=True,
     autoincrement=False
   )
+
+  order: Mapped[int] = mapped_column(Integer)
 
   race: Mapped["Race"] = relationship(
     "Race",

@@ -304,8 +304,19 @@ class RaceCreatorFrame(QFrame):
             self.time_input.setTime(dt.time())
             self.active_checkbox.setChecked(race.is_active)
             self.create_button.setText("Save changes")
+
+            self.checkpoint_service.get_checkpoints_of_race(race_id, self.populate_selected_checkpoints)
         self.race_service.get_race_by_id(race_id, populate)
 
+    def populate_selected_checkpoints(self, checkpoints):
+        self.selected_checkpoints_list.clear()
+
+        for cp in checkpoints:
+            item = QListWidgetItem(f"{cp.id}: {cp.name}")
+            item.setData(Qt.ItemDataRole.UserRole, cp.id)
+            self.selected_checkpoints_list.addItem(item)
+
+        
     def _reset_form(self):
         self.editing_race_id = None
         self.name_input.clear()
@@ -346,7 +357,7 @@ class RaceCreatorFrame(QFrame):
                 for i in range(self.selected_checkpoints_list.count())
             ]
             if selected_checkpoint_ids:
-                self.checkpoint_service.add_checkpoints_to_race(race_id, selected_checkpoint_ids, self._reset_form())
+                self.checkpoint_service.replace_race_checkpoints(race_id, selected_checkpoint_ids, self._reset_form())
 
         else:
             def on_race_created(data):
