@@ -44,7 +44,6 @@ class MainWindow(QMainWindow):
         self.setWindowTitle(WINDOW_TITLE)
         self.resize(WINDOW_WIDTH, WINDOW_HEIGHT)
 
-        # Main layout
         central_widget = QWidget()
         central_layout = QVBoxLayout()
         central_layout.setContentsMargins(0, 0, 0, 0)
@@ -55,6 +54,6 @@ class MainWindow(QMainWindow):
         central_layout.addWidget(self.content_widget)
         self.setCentralWidget(central_widget)
 
-        # Show initial frame
+        # dashboard homescreen
         self.content_controller.switch_to_index(0)
 

@@ -102,7 +102,6 @@ class RunnerService(QObject):
             data = reply.readAll().data()
             response = json.loads(data.decode("utf-8"))
             
-            # If name or surname provided, update the runner
             if name or surname:
                 runner_id = response.get("id")
                 if runner_id:

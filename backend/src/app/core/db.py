@@ -139,9 +139,9 @@ async def db_lifespan_context():
 	
 	await db_manager.create_tables()
 	
-	# from app.dev_utils.seed_db import seed_db
+	# from app.core.seed_db import seed_db_big as seed
 	# async with db_manager.get_session() as db:
-	# 	await seed_db(db)
+	# 	await seed(db)
 
 
 	is_healthy = await db_manager.health_check()

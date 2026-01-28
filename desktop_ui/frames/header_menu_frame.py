@@ -36,7 +36,7 @@ class HeaderMenuButton(QPushButton):
 
 
 class HeaderMenuFrame(QFrame):
-    def __init__(self, menu_items: list[tuple[str, Callable]], content_controller: ContentController,parent=None):
+    def __init__(self, menu_items: list[tuple[str, Callable]], content_controller: ContentController, parent=None):
         super().__init__(parent)
         self.setFixedHeight(50)
 
@@ -46,24 +46,20 @@ class HeaderMenuFrame(QFrame):
 
         self.menu_buttons = []
         self.menu_factories = []
-        self.menu_frames = []
 
         for index, (title, frame_factory) in enumerate(menu_items):
             btn = HeaderMenuButton(title)
             layout.addWidget(btn)
-            # Connect to parent controller if exists
+
             btn.clicked.connect(lambda _, i=index: content_controller.switch_to_index(i))
             self.menu_buttons.append(btn)
             self.menu_factories.append(frame_factory)
-            self.menu_frames.append(None)
 
         layout.addStretch()
 
     def get_frame(self, index: int) -> QWidget:
-        if self.menu_frames[index] is None:
-            factory = self.menu_factories[index]
-            self.menu_frames[index] = factory() if callable(factory) else factory
-        return self.menu_frames[index]
+        factory = self.menu_factories[index]
+        return factory() if callable(factory) else factory
 
     def set_active(self, index: int):
         for i, btn in enumerate(self.menu_buttons):
