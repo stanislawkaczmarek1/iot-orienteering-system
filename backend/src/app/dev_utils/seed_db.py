@@ -7,10 +7,8 @@ from app.crud.race import *
 from app.crud.checkpoint import *
 from app.crud.event import *
 from app.crud.runner import *
-from app.core.db import db_manager
 from sqlalchemy.ext.asyncio import AsyncSession
 from datetime import datetime
-import asyncio
 
 def nowString():
     return datetime.now().isoformat()
@@ -181,6 +179,7 @@ async def seed_db(session: AsyncSession):
         checkpoints[2].id
     )
 
+
     await create_event(
         session,
         EventCreate(
@@ -194,37 +193,25 @@ async def seed_db(session: AsyncSession):
         session,
         EventCreate(
             checkpoint_id = checkpoints[1].uuid,
-            rfid_uid = 2,
-            timestamp = nowString()
-        )
-    )
-
-    await create_event(
-        session,
-        EventCreate(
-            checkpoint_id = checkpoints[0].uuid,
-            rfid_uid = 3,
-            timestamp = nowString()
-        )
-    )
-
-    await create_event(
-        session,
-        EventCreate(
-            checkpoint_id = checkpoints[0].uuid,
             rfid_uid = 1,
             timestamp = nowString()
         )
     )
 
+    await create_event(
+        session,
+        EventCreate(
+            checkpoint_id = checkpoints[2].uuid,
+            rfid_uid = 1,
+            timestamp = nowString()
+        )
+    )
 
-if __name__ == "__main__":
-    async def main():
-        await db_manager.initialize()
-        await db_manager.create_tables()
-        async with db_manager.get_session() as session:
-            await seed_db(session)
-
-        await db_manager.close()
-    
-    asyncio.run(main())
+    await create_event(
+            session,
+            EventCreate(
+                checkpoint_id = checkpoints[0].uuid,
+                rfid_uid = 2,
+                timestamp = nowString()
+            )
+        )

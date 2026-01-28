@@ -133,17 +133,23 @@ async def get_db() -> AsyncGenerator[AsyncSession, None]:
 async def db_lifespan_context():
 	"""Context manager for database lifespan events."""
 	logger.info("Starting database initialization")
+
+
 	await db_manager.initialize()
 	
 	await db_manager.create_tables()
 	
+	# from app.dev_utils.seed_db import seed_db
+	# async with db_manager.get_session() as db:
+	# 	await seed_db(db)
+
+
 	is_healthy = await db_manager.health_check()
 	if not is_healthy:
 		logger.critical("Database health check failed during startup")
 		raise RuntimeError("Database health check failed")
 	
 	logger.info("Database connection established successfully")
-	
 	try:
 		yield
 	finally:

@@ -173,25 +173,26 @@ class RaceDetailFrame(QFrame):
         n_cols = 4 + len(vm.checkpoints)  # Added 1 for Actions column
         self.table.setColumnCount(n_cols)
 
-        headers = ["ID", "Name", "Surname"] + [cp.name for cp in vm.checkpoints] + ["Actions"]
+        headers = ["Actions","ID", "Name", "Surname"] + [cp.name for cp in vm.checkpoints]
         self.table.setHorizontalHeaderLabels(headers)
 
         self.table.setRowCount(len(vm.runners))
         self.table.verticalHeader().setVisible(False)
         self.table.setEditTriggers(QTableWidget.EditTrigger.NoEditTriggers)
-        self.table.setAlternatingRowColors(True)
-        self.table.setSortingEnabled(False)  # Disable sorting to avoid issues with widgets
+        self.table.setAlternatingRowColors(False)
+        self.table.setSortingEnabled(True)  # Disable sorting to avoid issues with widgets
+
 
         event_map = vm.events_map
 
         for row_idx, runner in enumerate(vm.runners):
-            self.table.setItem(row_idx, 0, QTableWidgetItem(str(runner.id)))
-            self.table.setItem(row_idx, 1, QTableWidgetItem(runner.name))
-            self.table.setItem(row_idx, 2, QTableWidgetItem(runner.surname))
+            self.table.setItem(row_idx, 1, QTableWidgetItem(str(runner.id)))
+            self.table.setItem(row_idx, 2, QTableWidgetItem(runner.name))
+            self.table.setItem(row_idx, 3, QTableWidgetItem(runner.surname))
 
             all_ts = []
 
-            for col_idx, cp in enumerate(vm.checkpoints, start=3):
+            for col_idx, cp in enumerate(vm.checkpoints, start=4):
                 ts = event_map.get((runner.id, cp.id))
                 ts_str = ts.strftime("%H:%M:%S.%f")[:-3] if ts else ""
                 self.table.setItem(row_idx, col_idx, QTableWidgetItem(ts_str))
@@ -208,9 +209,8 @@ class RaceDetailFrame(QFrame):
             btn_layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
             btn_layout.addWidget(remove_btn)
             
-            self.table.setCellWidget(row_idx, n_cols - 1, container)
+            self.table.setCellWidget(row_idx, 0, container)
 
-            # row coloring
             if all(all_ts):
                 color = QColor(59, 58, 58)
             elif all(ts is None for ts in all_ts):
@@ -218,11 +218,18 @@ class RaceDetailFrame(QFrame):
             else:
                 color = None
 
+            
             if color:
-                for col_idx in range(n_cols - 1):  # Exclude actions column
-                    item = self.table.item(row_idx, col_idx)
+                for col in range(n_cols):
+                    item = self.table.item(row_idx, col)
                     if item:
                         item.setBackground(color)
+
+                    widget = self.table.cellWidget(row_idx, col)
+                    if widget:
+                        widget.setStyleSheet(
+                            f"background-color: rgb({color.red()}, {color.green()}, {color.blue()});")
+            
 
     def on_add_runner_clicked(self):
         if not self.all_runners:
