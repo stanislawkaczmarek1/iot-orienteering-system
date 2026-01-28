@@ -18,7 +18,7 @@ class HardwareController:
             self.pixels.fill((0, 0, 0))
             self.pixels.show()
         except Exception as e:
-            print(f"exception occured while led init: {e}")
+            print(f"exception occurred while led init: {e}")
             self.pixels = None
     
     def buzzer_beep(self, count, duration, pause):
@@ -46,9 +46,13 @@ class HardwareController:
         except Exception as e:
             print(f"exception occurred while led animation: {e}")
     
-    def signal_success(self):
+    def signal_success_checkpoint(self):
         self.buzzer_beep(count=1, duration=0.15, pause=0.1)
         self.led_animation(color=(0, 255, 0), blinks=2, duration=0.3, pause=0.1)
+    
+    def signal_success_register_runner(self):
+        self.buzzer_beep(count=1, duration=0.15, pause=0.1)
+        self.led_animation(color=(0, 0, 255), blinks=2, duration=0.3, pause=0.1)
     
     def signal_error(self):
         self.buzzer_beep(count=2, duration=0.1, pause=0.1)

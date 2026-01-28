@@ -1,3 +1,4 @@
+from enum import Enum
 import time
 from datetime import datetime
 from raspberry.app_config import COOLDOWN_TIME
@@ -5,7 +6,11 @@ from checkpoint_id_manager import get_or_create_checkpoint_id
 from hardware import HardwareController
 from rfid_reader import RFIDReader
 from backend_client import BackendClient
+from hardware_config import buttonGreen, GPIO
 
+class Mode(Enum):
+    CHECKPOINT = "checkpoint"
+    REGISTER_RUNNER = "register_runner"
 
 class CheckpointScanner:
 
@@ -15,14 +20,28 @@ class CheckpointScanner:
         self.rfid = RFIDReader()
         self.backend = BackendClient()
         self.last_scanned_cards = {}  # uid -> timestamp of last scan
+        self.current_mode = Mode.CHECKPOINT
+
+        GPIO.add_event_detect(
+            buttonGreen, 
+            GPIO.FALLING, 
+            callback=self._toggle_mode_callback, 
+            bouncetime=300
+        )
     
+    def _toggle_mode_callback(self, channel):
+        if self.current_mode == Mode.CHECKPOINT:
+            self.current_mode = Mode.REGISTER_RUNNER
+        else:
+            self.current_mode = Mode.CHECKPOINT
+
     def is_card_in_cooldown(self, uid):
         if uid in self.last_scanned_cards:
             time_since_last_scan = time.time() - self.last_scanned_cards[uid] 
             return time_since_last_scan < COOLDOWN_TIME
         return False
     
-    def process_card(self, uid):
+    def process_card_checkpoint(self, uid):
         timestamp = datetime.now().isoformat()
         
         success = self.backend.send_checkpoint_data(
@@ -32,7 +51,7 @@ class CheckpointScanner:
         )
         
         if success:
-            self.hardware.signal_success()
+            self.hardware.signal_success_checkpoint()
         else:
             self.hardware.signal_error()
         
@@ -40,6 +59,24 @@ class CheckpointScanner:
         
         return success
     
+    def process_card_register_runner(self, uid):
+        success = self.backend.create_runner(uid)
+        
+        if success:
+            self.hardware.signal_success_register_runner()
+        else:
+            self.hardware.signal_error()
+        
+        self.last_scanned_cards[uid] = time.time()  #dict[uid] is always up to date
+
+        return success
+    
+    def process_card(self, uid):
+        if self.current_mode == Mode.CHECKPOINT:
+            return self.process_card_checkpoint(uid)
+        elif self.current_mode == Mode.REGISTER_RUNNER:
+            return self.process_card_register_runner(uid)
+
     def run(self):
         try:
             while True:

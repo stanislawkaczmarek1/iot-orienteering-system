@@ -2,7 +2,7 @@ import os
 from uuid import uuid4
 import requests
 from datetime import datetime
-from raspberry.app_config import CHECKPOINT_ID_FILE, BACKEND_REGISTER_URL, BACKEND_REGISTER_TIMEOUT
+from raspberry.app_config import CHECKPOINT_ID_FILE, BACKEND_REGISTER_CP_URL, BACKEND_REGISTER_TIMEOUT
 
 
 def load_checkpoint_id():
@@ -37,7 +37,7 @@ def register_with_backend():
     
     try:
         response = requests.post(
-            BACKEND_REGISTER_URL,
+            BACKEND_REGISTER_CP_URL,
             json=data,
             headers={'Content-Type': 'application/json'},
             timeout=BACKEND_REGISTER_TIMEOUT
@@ -64,7 +64,7 @@ def register_with_backend():
             checkpoint still can send standard event reqest using generated uuid
             but backend doesnt have checkpoint id in the db
         """
-        print(f"excepion occured while sending request: {e}")
+        print(f"excepion occurred while sending request: {e}")
         save_checkpoint_id(checkpoint_id)
         return checkpoint_id
 
