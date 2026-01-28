@@ -20,7 +20,6 @@ class AddRunnerToRaceDialog(QDialog):
         self.setModal(True)
         self.setMinimumSize(400, 300)
 
-        # Filter out runners already in the race
         race_runner_ids = {r.id for r in race_runners}
         self.available_runners = [r for r in all_runners if r.id not in race_runner_ids]
 
@@ -70,6 +69,8 @@ class RaceDetailViewModel(QObject):
         self.runners: list[RunnerModel] = []
         self.checkpoints: list[CheckpointModel] = []
         self.events_map: dict[tuple[int, int], datetime] = {}  # (runner_id, checkpoint_id) -> timestamp
+
+        self.event_service.eventsLoaded.connect(self._load_events)
 
         self._load_race()
         self._load_checkpoints()
@@ -130,7 +131,6 @@ class RaceDetailFrame(QFrame):
         self.init_ui()
         self.view_model.data_updated.connect(self.load_data)
         
-        # Load all runners for the add dialog
         self.runner_service.runnersLoaded.connect(self.on_all_runners_loaded)
 
     def on_all_runners_loaded(self, runners: list[RunnerModel]):
@@ -139,7 +139,6 @@ class RaceDetailFrame(QFrame):
     def init_ui(self):
         layout = QVBoxLayout(self)
         
-        # Header with race info and add runner button
         header_layout = QHBoxLayout()
         
         info_layout = QVBoxLayout()
@@ -170,7 +169,7 @@ class RaceDetailFrame(QFrame):
                 f"Date: {vm.race.date.strftime('%Y-%m-%d')}"
             )
 
-        n_cols = 4 + len(vm.checkpoints)  # Added 1 for Actions column
+        n_cols = 4 + len(vm.checkpoints)
         self.table.setColumnCount(n_cols)
 
         headers = ["Actions","ID", "Name", "Surname"] + [cp.name for cp in vm.checkpoints]
@@ -180,7 +179,7 @@ class RaceDetailFrame(QFrame):
         self.table.verticalHeader().setVisible(False)
         self.table.setEditTriggers(QTableWidget.EditTrigger.NoEditTriggers)
         self.table.setAlternatingRowColors(False)
-        self.table.setSortingEnabled(True)  # Disable sorting to avoid issues with widgets
+        self.table.setSortingEnabled(False) 
 
 
         event_map = vm.events_map
@@ -198,7 +197,6 @@ class RaceDetailFrame(QFrame):
                 self.table.setItem(row_idx, col_idx, QTableWidgetItem(ts_str))
                 all_ts.append(ts)
 
-            # Add remove button in the last column
             remove_btn = QPushButton("Remove")
             remove_btn.setFixedSize(70, 25)
             remove_btn.clicked.connect(lambda _, rid=runner.id: self.on_remove_runner(rid))
@@ -249,7 +247,6 @@ class RaceDetailFrame(QFrame):
 
     def on_runner_added(self, success: bool):
         if success:
-            # Refresh the runners list
             self.view_model._load_runners()
         else:
             QMessageBox.warning(self, "Error", "Failed to add runner to race.")
@@ -271,7 +268,6 @@ class RaceDetailFrame(QFrame):
 
     def on_runner_removed(self, success: bool):
         if success:
-            # Refresh the runners list
             self.view_model._load_runners()
         else:
             QMessageBox.warning(self, "Error", "Failed to remove runner from race.")
