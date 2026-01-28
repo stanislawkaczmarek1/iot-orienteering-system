@@ -5,6 +5,8 @@ from sqlalchemy.orm import Mapped, relationship, mapped_column
 
 from app.core.db import Base
 
+from app.models.event import Event
+
 if TYPE_CHECKING:
   from app.models.runner import Runner
   from app.models.checkpoint import Checkpoint
@@ -27,6 +29,11 @@ class Race(Base):
     "RaceCheckpoint",
     back_populates="race",
     cascade="all, delete-orphan",
+  )
+  events: Mapped[List[Event]] = relationship(
+    "Event",
+    back_populates="race",
+    cascade="all, delete-orphan"
   )
 
 

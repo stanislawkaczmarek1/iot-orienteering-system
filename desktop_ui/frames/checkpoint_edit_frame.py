@@ -10,7 +10,7 @@ from desktop_ui.services.checkpoint_service import CheckpointService, Checkpoint
 
 
 class CheckpointsListFrame(QFrame):
-    HEADERS = ["ID", "Name", "UUID", ""]
+    HEADERS = ["ID", "Name", "UUID", "Actions"]
 
     def __init__(self, checkpoint_service: CheckpointService, parent=None):
         super().__init__(parent)

@@ -1,5 +1,7 @@
 from datetime import datetime
 import logging
+from typing import List
+
 from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -14,7 +16,7 @@ logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/events", tags=["events"])
 
 
-@router.post("/", response_model=EventResponse, status_code=status.HTTP_201_CREATED)
+@router.post("/", response_model=List[EventResponse], status_code=status.HTTP_201_CREATED)
 async def create_event(
   event_in: EventCreate,
   db: AsyncSession = Depends(get_db)

@@ -67,7 +67,7 @@ async def delete_runner(db: AsyncSession, runner_id: int) -> bool:
   await db.commit()
   return True
 
-async def get_runner_by_rfid(db: AsyncSession, rfid: str) -> Runner | None:
+async def get_runner_by_rfid(db: AsyncSession, rfid: str, ) -> Runner | None:
   """Get a runner by rfid."""
   result = await db.execute(
     select(Runner).where(Runner.rfid_uid == rfid)
