@@ -10,8 +10,7 @@ from app.schemas.event import EventCreate
 
 from app.crud.checkpoint import get_checkpoint_by_uuid
 from app.crud.runner import get_runner_by_rfid
-from app.crud.race import get_active_races_with_checkpoint
-
+from app.crud.race import get_active_races_with_checkpoint_and_runner
 
 async def get_event(db: AsyncSession, event_id: int) -> Event | None:
   """Get a single event by ID."""
@@ -23,6 +22,7 @@ async def get_events(db: AsyncSession, skip: int = 0, limit: int = 100) -> Seque
   """Get all events with pagination."""
   result = await db.execute(select(Event).offset(skip).limit(limit))
   return result.scalars().all()
+
 
 async def get_events_of_race(db: AsyncSession, race_id: int, skip: int = 0, limit: int = 100) -> Sequence[Event]:
   """Get all events with pagination."""
@@ -57,11 +57,11 @@ async def create_event(db: AsyncSession, event_in: EventCreate) -> List[Event]:
       detail=f"Runner with rfid_uid: {event_in.rfid_uid} not found"
     )
 
-  races = await get_active_races_with_checkpoint(db, checkpoint.id)
+  races = await get_active_races_with_checkpoint_and_runner(db, checkpoint.id, runner.id)
   if len(races) == 0:
     raise HTTPException(
       status_code=status.HTTP_404_NOT_FOUND,
-      detail=f"Checkpoint with id: {checkpoint.id} is not a part of any active race"
+      detail=f"Runner with id: {runner.id} does not take part in any active races with checkpoint with id: {checkpoint.id}"
     )
 
 

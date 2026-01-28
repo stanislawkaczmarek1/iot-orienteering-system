@@ -1,5 +1,5 @@
 from typing import Sequence, List
-from sqlalchemy import select, delete, func
+from sqlalchemy import select, delete, func, exists
 from sqlalchemy.ext.asyncio import AsyncSession
 from datetime import datetime
 
@@ -38,11 +38,11 @@ async def update_race(db: AsyncSession, race_id: int, race_in: RaceUpdate) -> Ra
   race = await get_race(db, race_id)
   if not race:
     return None
-  
+
   update_data = race_in.model_dump(exclude_unset=True)
   for field, value in update_data.items():
     setattr(race, field, value)
-  
+
   await db.commit()
   await db.refresh(race)
   return race
@@ -53,7 +53,7 @@ async def delete_race(db: AsyncSession, race_id: int) -> bool:
   race = await get_race(db, race_id)
   if not race:
     return False
-  
+
   await db.delete(race)
   await db.commit()
   return True
@@ -81,7 +81,7 @@ async def add_race_checkpoint(db: AsyncSession, race_id: int, checkpoint_id: int
   max_order = r.scalar()
   if max_order is None:
     max_order = 1
-    
+
   race_checkpoint = RaceCheckpoint(race_id=race_id, checkpoint_id=checkpoint_id, order=(max_order + 1))
   db.add(race_checkpoint)
   await db.commit()
@@ -111,6 +111,7 @@ async def get_race_runners(db: AsyncSession, race_id: int) -> Sequence[Runner]:
   )
   return result.scalars().all()
 
+
 async def delete_race_checkpoints(db: AsyncSession, race_id: int):
   result = await db.execute(
     delete(RaceCheckpoint).where(
@@ -130,9 +131,10 @@ async def replace_race_checkpoints(db: AsyncSession, race_id: int, new_checkpoin
   await db.commit()
   i = 1
   for c in new_checkpoints:
-    db.add( RaceCheckpoint(race_id=race_id, checkpoint_id=c, order=i))
+    db.add(RaceCheckpoint(race_id=race_id, checkpoint_id=c, order=i))
     i += 1
   await db.commit()
+
 
 async def add_race_runner(db: AsyncSession, race_id: int, runner_id: int) -> RaceRunner:
   """Add a runner to a race."""
@@ -161,12 +163,25 @@ async def remove_race_runner(db: AsyncSession, race_id: int, runner_id: int) -> 
   await db.commit()
   return result.rowcount > 0 or result2.rowcount > 0
 
-async def get_active_races_with_checkpoint(db: AsyncSession, checkpoint_id: int) -> Sequence[Race]:
+
+async def get_active_races_with_checkpoint_and_runner(db: AsyncSession, checkpoint_id: int, runner_id: int) -> Sequence[
+  Race]:
   result = await db.execute(
-    select(Race).join(RaceCheckpoint).where((Race.is_active == True) & (RaceCheckpoint.checkpoint_id == checkpoint_id))
+    select(Race)
+      .join(RaceCheckpoint, Race.id == RaceCheckpoint.race_id)
+      .join(RaceRunner, Race.id == RaceRunner.race_id)
+      .where(
+          (Race.is_active == True) &
+          (RaceCheckpoint.checkpoint_id == checkpoint_id) &
+          (RaceRunner.runner_id == runner_id)
+      )
   )
   return result.scalars().all()
 
 
+async def get_race_checkpoint(db: AsyncSession, race_id: int, checkpoint_id: int) -> RaceCheckpoint:
+  result = await db.execute(
+    select(RaceCheckpoint).where(RaceCheckpoint.checkpoint_id == checkpoint_id).where(RaceCheckpoint.race_id == race_id)
+  )
 
-
+  return result.scalar_one_or_none()

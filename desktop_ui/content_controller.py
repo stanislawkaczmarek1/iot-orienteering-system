@@ -12,6 +12,7 @@ class ContentController:
 
     def switch_to_frame(self, frame: QWidget):
         self._show_frame(frame)
+        self.header_menu.set_active(None)
 
     def _show_frame(self, frame: QWidget):
         if self.content_area.indexOf(frame) == -1:

@@ -1,4 +1,6 @@
 import sys
+
+from PyQt6.QtCore import Qt
 from PyQt6.QtWidgets import QApplication, QMainWindow
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session
@@ -9,6 +11,7 @@ from desktop_ui.main_window import MainWindow
 
 def main():
     app = QApplication(sys.argv)
+    app.styleHints().setColorScheme(Qt.ColorScheme.Dark)
 
     window = MainWindow()
     window.show()
