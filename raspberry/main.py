@@ -22,6 +22,8 @@ class CheckpointScanner:
         self.last_scanned_cards = {}  # uid -> timestamp of last scan
         self.current_mode = Mode.CHECKPOINT
 
+        self.hardware.display_checkpoint_id(checkpoint_id)
+
         GPIO.add_event_detect(
             buttonGreen, 
             GPIO.FALLING, 

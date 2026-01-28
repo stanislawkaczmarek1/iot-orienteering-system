@@ -2,6 +2,8 @@ import time
 import board
 import neopixel
 from hardware_config import buzzerPin, GPIO
+from PIL import Image, ImageDraw, ImageFont
+import lib.oled.SSD1331 as SSD1331
 
 
 class HardwareController:
@@ -20,6 +22,15 @@ class HardwareController:
         except Exception as e:
             print(f"exception occurred while led init: {e}")
             self.pixels = None
+        
+        self.oled = None
+        try:
+            self.oled = SSD1331.SSD1331()
+            self.oled.Init()
+            self.oled.clear()
+        except Exception as e:
+            print(f"exception occurred while oled init: {e}")
+            self.oled = None
     
     def buzzer_beep(self, count, duration, pause):
         for _ in range(count):
@@ -62,5 +73,28 @@ class HardwareController:
         if self.pixels is not None:
             self.pixels.fill((0, 0, 0))
             self.pixels.show()
+        if self.oled is not None:
+            self.oled.clear()
         GPIO.output(buzzerPin, GPIO.HIGH) #of
         GPIO.cleanup()
+
+    def display_checkpoint_id(self, checkpoint_id):
+        if self.oled is None:
+            return
+        
+        try:
+            short_id = checkpoint_id[:8]
+            
+            image = Image.new("RGB", (self.oled.width, self.oled.height), "BLACK")
+            draw = ImageDraw.Draw(image)
+            
+            fontSmall = ImageFont.truetype('./lib/oled/Font.ttf', 13)
+            fontLarge = ImageFont.truetype('./lib/oled/Font.ttf', 20)
+            
+            draw.text((8, 5), "Checkpoint:", font=fontSmall, fill="WHITE")
+            draw.text((8, 30), short_id, font=fontLarge, fill="GREEN")
+            
+            self.oled.ShowImage(image, 0, 0)
+            
+        except Exception as e:
+            print(f"exception occurred while oled display: {e}")
