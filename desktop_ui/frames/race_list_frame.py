@@ -102,6 +102,7 @@ class RaceListFrame(QFrame):
 
     def edit_race(self, race_id: int):
         frame = RaceCreatorFrame(
+            self.content_controller,
             self.race_service,
             self.checkpoint_service,
         )

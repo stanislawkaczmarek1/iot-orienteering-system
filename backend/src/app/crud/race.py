@@ -8,6 +8,9 @@ from app.models.checkpoint import Checkpoint
 from app.models.runner import Runner
 from app.schemas.race import RaceCreate, RaceUpdate
 
+from app.models.event import Event
+
+
 # Race CRUD operations
 async def get_race(db: AsyncSession, race_id: int) -> Race | None:
   """Get a single race by ID."""
@@ -148,14 +151,21 @@ async def remove_race_runner(db: AsyncSession, race_id: int, runner_id: int) -> 
       RaceRunner.runner_id == runner_id
     )
   )
-  await db.commit()
-  return result.rowcount > 0
+  result2 = await db.execute(
+    delete(Event).where(
+      Event.race_id == race_id,
+      Event.runner_id == runner_id
+    )
+  )
 
-async def get_active_race_with_checkpoint(db: AsyncSession, checkpoint_id: int) -> Race | None:
+  await db.commit()
+  return result.rowcount > 0 or result2.rowcount > 0
+
+async def get_active_races_with_checkpoint(db: AsyncSession, checkpoint_id: int) -> Sequence[Race]:
   result = await db.execute(
     select(Race).join(RaceCheckpoint).where((Race.is_active == True) & (RaceCheckpoint.checkpoint_id == checkpoint_id))
   )
-  return result.scalar_one_or_none()
+  return result.scalars().all()
 
 
 

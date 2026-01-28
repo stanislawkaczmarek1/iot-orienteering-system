@@ -1,7 +1,6 @@
 from PyQt6.QtWidgets import QStackedLayout, QWidget 
 
 class ContentController:
-    """A lightweight controller to switch the central content area."""
     def __init__(self, content_area: QStackedLayout, header_menu: 'HeaderMenuFrame'):
         self.content_area = content_area
         self.header_menu = header_menu

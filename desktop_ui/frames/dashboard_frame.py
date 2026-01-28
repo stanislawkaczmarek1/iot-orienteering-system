@@ -1,13 +1,17 @@
-from typing import List
+from typing import List, Callable
 
 from PyQt6.QtCore import Qt, QObject, pyqtSignal
-from PyQt6.QtWidgets import QFrame, QVBoxLayout, QLabel, QHBoxLayout
+from PyQt6.QtWidgets import QFrame, QVBoxLayout, QLabel, QHBoxLayout, QPushButton
 
+from desktop_ui.frames.race_detail_frame import RaceDetailFrame
+from desktop_ui.services.checkpoint_service import CheckpointService
+from desktop_ui.services.event_service import EventService
 from desktop_ui.services.race_service import RaceModel, RaceService
-from desktop_ui.content_controller import ContentController 
+from desktop_ui.content_controller import ContentController
+from desktop_ui.services.runner_service import RunnerService
 
 CARD_WIDTH = 150
-CARD_HEIGHT = 120
+CARD_HEIGHT = 130
 
 
 class DashboardViewModel(QObject):
@@ -51,7 +55,7 @@ class RaceCard(QFrame):
     width = CARD_WIDTH
     height = CARD_HEIGHT
 
-    def __init__(self, race: RaceModel, parent=None):
+    def __init__(self, race: RaceModel, on_view_race: Callable[[int], None], parent=None):
         super().__init__(parent)
 
         self.race = race
@@ -80,6 +84,10 @@ class RaceCard(QFrame):
         date_label.setStyleSheet("font-size: 13px; color: #AAAAAA;")
         self.layout.addWidget(date_label)
 
+        view_btn = QPushButton("View")
+        view_btn.clicked.connect(lambda: on_view_race(self.race.id))
+        self.layout.addWidget(view_btn)
+
 
 class EmptyList(QFrame):
     def __init__(self, text: str, parent=None):
@@ -96,8 +104,21 @@ class EmptyList(QFrame):
 
 
 class DashboardFrame(QFrame):
-    def __init__(self, content_controller: ContentController, race_service: RaceService, parent=None):
+    def __init__(self,
+                 content_controller: ContentController,
+                 race_service: RaceService,
+                 runner_service: RunnerService,
+                 event_service: EventService,
+                 checkpoint_service: CheckpointService,
+                 parent=None):
         super(DashboardFrame, self).__init__(parent)
+
+        self.content_controller = content_controller
+        self.race_service = race_service
+        self.runner_service = runner_service
+        self.event_service = event_service
+        self.checkpoint_service = checkpoint_service
+
         self.model = DashboardViewModel(race_service)
         self.model.dashboard_updated.connect(self.refresh_ui)
 
@@ -107,7 +128,7 @@ class DashboardFrame(QFrame):
 
         self.incoming_races_layout = QVBoxLayout()
         self.layout.addLayout(self.incoming_races_layout)
-        incoming_label = QLabel("Incoming Races:")
+        incoming_label = QLabel("Active Races:")
         incoming_label.setStyleSheet("font-size: 20px; font-weight: bold; color: white;")
         self.incoming_races_layout.addWidget(incoming_label)
 
@@ -117,7 +138,7 @@ class DashboardFrame(QFrame):
 
         self.historic_races_layout = QVBoxLayout()
         self.layout.addLayout(self.historic_races_layout)
-        historic_label = QLabel("Historic Races:")
+        historic_label = QLabel("Inactive Races:")
         historic_label.setStyleSheet("font-size: 20px; font-weight: bold; color: white;")
         self.incoming_races_layout.addWidget(historic_label)
         self.historic_races_list_layout = QHBoxLayout()
@@ -138,13 +159,13 @@ class DashboardFrame(QFrame):
             self.incoming_races_list_layout.addWidget(EmptyList("No races incoming"))
 
         for race in self.model.visible_incoming:
-            self.incoming_races_list_layout.addWidget(RaceCard(race))
+            self.incoming_races_list_layout.addWidget(RaceCard(race, self.view_race))
 
         if len(self.model.visible_historic) == 0:
             self.historic_races_list_layout.addWidget(EmptyList("No historic races"))
 
         for race in self.model.visible_historic:
-            self.historic_races_list_layout.addWidget(RaceCard(race))
+            self.historic_races_list_layout.addWidget(RaceCard(race, self.view_race))
 
         self.incoming_races_list_layout.addStretch()
         self.historic_races_list_layout.addStretch()
@@ -160,3 +181,13 @@ class DashboardFrame(QFrame):
                 widget.deleteLater()
             elif item.layout():
                 self.clear_layout(item.layout())
+
+    def view_race(self, race_id: int):
+        frame = RaceDetailFrame(
+            self.race_service,
+            self.runner_service,
+            self.event_service,
+            self.checkpoint_service,
+            race_id
+        )
+        self.content_controller.switch_to_frame(frame)
