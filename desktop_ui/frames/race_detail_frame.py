@@ -84,7 +84,7 @@ class RaceDetailViewModel(QObject):
 
     def _load_checkpoints(self):
         def handle_checkpoints(checkpoints):
-            self.checkpoints = sorted(checkpoints, key=lambda cp: getattr(cp, "order", 0))
+            self.checkpoints = checkpoints
             self.data_updated.emit()
 
         self.checkpoint_service.get_checkpoints_of_race(self.race_id, handle_checkpoints)

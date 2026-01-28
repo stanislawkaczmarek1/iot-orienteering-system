@@ -13,7 +13,7 @@ async def get_checkpoint(db: AsyncSession, checkpoint_id: int) -> Checkpoint | N
   return result.scalar_one_or_none()
 
 async def get_checkpoints_of_race(db: AsyncSession, race_id: int) ->  Sequence[Checkpoint]:
-  result = await db.execute(select(Checkpoint).join(RaceCheckpoint).where(RaceCheckpoint.race_id == race_id))
+  result = await db.execute(select(Checkpoint).join(RaceCheckpoint).where(RaceCheckpoint.race_id == race_id).order_by(RaceCheckpoint.order.asc()))
   return result.scalars().all()
 
 async def get_checkpoints(db: AsyncSession, skip: int = 0, limit: int = 100) -> Sequence[Checkpoint]:

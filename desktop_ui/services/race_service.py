@@ -105,35 +105,21 @@ class RaceService(QObject):
         reply.deleteLater()
         self.get_races()
 
-    def add_runner_to_race(self, race_id: int, runner_id: int, callback=None):
-        request = QNetworkRequest(QUrl(f"http://127.0.0.1:8000/api/races/{race_id}/runners/{runner_id}"))
-        request.setHeader(QNetworkRequest.KnownHeaders.ContentTypeHeader, "application/json")
-        reply = self.manager.post(request, b"")
-        reply.finished.connect(lambda r=reply: self._on_add_runner_to_race(r, callback))
 
-    def _on_add_runner_to_race(self, reply, callback):
-        try:
-            if reply.error() == reply.NetworkError.NoError:
-                if callback:
-                    callback(True)
-            else:
-                if callback:
-                    callback(False)
-        finally:
-            reply.deleteLater()
+    def update_race(self, race_id: int, payload: dict):
+        url = f"http://127.0.0.1:8000/api/races/{race_id}"
+        request = QNetworkRequest(QUrl(url))
+        request.setHeader(
+            QNetworkRequest.KnownHeaders.ContentTypeHeader,
+            "application/json",
+        )
 
-    def remove_runner_from_race(self, race_id: int, runner_id: int, callback=None):
-        request = QNetworkRequest(QUrl(f"http://127.0.0.1:8000/api/races/{race_id}/runners/{runner_id}"))
-        reply = self.manager.deleteResource(request)
-        reply.finished.connect(lambda r=reply: self._on_remove_runner_from_race(r, callback))
+        reply = self.manager.put(
+            request,
+            json.dumps(payload).encode("utf-8"),
+        )
+        reply.finished.connect(lambda r=reply: self._on_update_race(r))
 
-    def _on_remove_runner_from_race(self, reply, callback):
-        try:
-            if reply.error() == reply.NetworkError.NoError:
-                if callback:
-                    callback(True)
-            else:
-                if callback:
-                    callback(False)
-        finally:
-            reply.deleteLater()
+
+    def _on_update_race(self, reply):
+        reply.deleteLater()

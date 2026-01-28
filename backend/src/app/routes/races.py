@@ -1,6 +1,7 @@
 import logging
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
+from typing import Optional
 
 from app.core.db import get_db
 from app.schemas.race import RaceCreate, RaceUpdate, RaceResponse
@@ -127,7 +128,10 @@ async def remove_checkpoint_from_race(
 ):
   """Remove a checkpoint from a race."""
   logger.debug(f"Removing checkpoint {checkpoint_id} from race {race_id}")
-  success = await race_crud.remove_race_checkpoint(db, race_id, checkpoint_id)
+  if checkpoint_id == -1:
+    success = await race_crud.delete_race_checkpoints(db, race_id)
+  else:
+    success = await race_crud.remove_race_checkpoint(db, race_id, checkpoint_id)
   if not success:
     raise HTTPException(
       status_code=status.HTTP_404_NOT_FOUND,
