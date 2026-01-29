@@ -1,7 +1,7 @@
 from enum import Enum
 import time
 from datetime import datetime
-from raspberry.app_config import COOLDOWN_TIME
+from app_config import COOLDOWN_TIME
 from checkpoint_id_manager import get_or_create_checkpoint_id
 from hardware import HardwareController
 from rfid_reader import RFIDReader
@@ -34,8 +34,11 @@ class CheckpointScanner:
     def _toggle_mode_callback(self, channel):
         if self.current_mode == Mode.CHECKPOINT:
             self.current_mode = Mode.REGISTER_RUNNER
+            self.hardware.led_animation(color=(125, 125, 125), blinks=1, duration=0.1, pause=0.3)
         else:
             self.current_mode = Mode.CHECKPOINT
+            self.hardware.led_animation(color=(0, 0, 255), blinks=1, duration=0.1, pause=0.3)
+        print(f"Mode: {self.current_mode}")
 
     def is_card_in_cooldown(self, uid):
         if uid in self.last_scanned_cards:

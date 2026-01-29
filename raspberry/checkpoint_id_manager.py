@@ -2,8 +2,7 @@ import os
 from uuid import uuid4
 import requests
 from datetime import datetime
-from raspberry.app_config import CHECKPOINT_ID_FILE, BACKEND_REGISTER_CP_URL, BACKEND_REGISTER_TIMEOUT
-
+from app_config import CHECKPOINT_ID_FILE, BACKEND_REGISTER_CP_URL, BACKEND_REGISTER_TIMEOUT
 
 def load_checkpoint_id():
     if os.path.exists(CHECKPOINT_ID_FILE):

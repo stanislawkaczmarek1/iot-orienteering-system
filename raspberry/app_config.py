@@ -1,6 +1,6 @@
 CHECKPOINT_ID_FILE = "/home/pi/checkpoint_id.conf"
 
-BACKEND_IP = "your-backend-ip"
+BACKEND_IP = "10.193.181.108:8000"
 
 BACKEND_CHECKPOINT_URL = f"http://{BACKEND_IP}/api/events" 
 BACKEND_REGISTER_CP_URL = f"http://{BACKEND_IP}/api/checkpoints" 

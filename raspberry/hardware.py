@@ -1,5 +1,6 @@
 import time
 import board
+import os
 import neopixel
 from hardware_config import buzzerPin, GPIO
 from PIL import Image, ImageDraw, ImageFont
@@ -25,6 +26,7 @@ class HardwareController:
         
         self.oled = None
         try:
+            os.system("sudo systemctl stop ip-oled.service")
             self.oled = SSD1331.SSD1331()
             self.oled.Init()
             self.oled.clear()
@@ -45,6 +47,13 @@ class HardwareController:
             return
         
         try:
+            self.pixels = neopixel.NeoPixel(
+                board.D18,
+                8, 
+                brightness=1.0/32, 
+                auto_write=False
+            )
+
             for _ in range(blinks):
                 self.pixels.fill(color)
                 self.pixels.show()
