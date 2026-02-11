@@ -1,4 +1,4 @@
-# IoT Orienteering System 
+# IoT Orienteering System 🧭
 
 An IoT-based orienteering race tracking system that uses smart checkpoints to record participants’ progress in real-time. The system provides a user-friendly interface for race management and live race monitoring.
 
@@ -12,7 +12,7 @@ The FastAPI backend handles data from all devices and stores it in a SQLite data
 
 ---
 
-## **Technologies Used**
+## 🛠 **Technologies Used**
 
 - Python
 - FastAPI
@@ -23,7 +23,7 @@ The FastAPI backend handles data from all devices and stores it in a SQLite data
   
 ---
 
-## **Team**
+## 🤝 **Team**
 
 - [Jakub](https://github.com/jakubwesta)
 - [Łukasz](https://github.com/Barabasz1)
