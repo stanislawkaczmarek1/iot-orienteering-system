@@ -10,6 +10,8 @@ The PyQt6 desktop UI allows organizers to add and manage participants, create ra
 
 The FastAPI backend handles data from all devices and stores it in a SQLite database.
 
+---
+
 ## **Technologies Used**
 
 - Python
@@ -18,6 +20,8 @@ The FastAPI backend handles data from all devices and stores it in a SQLite data
 - SQLite
 - PyQt6
 - Raspberry Pi
+  
+---
 
 ## **Team**
 
@@ -25,22 +29,6 @@ The FastAPI backend handles data from all devices and stores it in a SQLite data
 - [Łukasz](https://github.com/Barabasz1)
 - [Mateusz](https://github.com/HavilMal)
 - [Stanisław](https://github.com/stanislawkaczmarek1)
-  
-## **System Architecture**
 
-+-----------------+
-| PyQt6 Desktop   |
-| Interface       |
-+--------+--------+
-         |
-+-----------------+
-| FastAPI Backend,|
-| SQLite          |
-+--------+--------+
-         |
-+--------+--------+--------+
-|        |        |        |
-| Pi 1   | Pi 2   | Pi 3   |
-| Check- | Check- | Check- |
-| point  | point  | point  |
-+--------+--------+--------+
+---
+
