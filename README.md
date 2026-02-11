@@ -1,4 +1,4 @@
-# IoT Orienteering System 🧭
+# IoT Orienteering System 
 
 An IoT-based orienteering race tracking system that uses smart checkpoints to record participants’ progress in real-time. The system provides a user-friendly interface for race management and live race monitoring.
 
@@ -10,9 +10,7 @@ The PyQt6 desktop UI allows organizers to add and manage participants, create ra
 
 The FastAPI backend handles data from all devices and stores it in a SQLite database.
 
----
-
-## 🛠 **Technologies Used**
+## **Technologies Used**
 
 - Python
 - FastAPI
@@ -20,19 +18,15 @@ The FastAPI backend handles data from all devices and stores it in a SQLite data
 - SQLite
 - PyQt6
 - Raspberry Pi
-  
----
 
-## 🤝 **Team**
+## **Team**
 
 - [Jakub](https://github.com/jakubwesta)
 - [Łukasz](https://github.com/Barabasz1)
 - [Mateusz](https://github.com/HavilMal)
 - [Stanisław](https://github.com/stanislawkaczmarek1)
   
----
-
-## 📸 **System Architecture**
+## **System Architecture**
 
 +-----------------+
 | PyQt6 Desktop   |
